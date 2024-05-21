@@ -16,5 +16,5 @@ You need to download stable diffusion v1.5 weight from HuggingFace: https://hf-m
 
 ### 4. Descriptions of the core scripts:
 
-generate_camouflage.py: used for texture generation, you can specific your input prompt in this script
-EFR_train.py: used for EFR training
+- generate_camouflage.py: used for texture generation, you can specific your input prompt in this script
+- EFR_train.py: used for EFR training
