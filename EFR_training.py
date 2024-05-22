@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 logger = None
 
 def cal_texture(texture_param, texture_origin, texture_mask, texture_content=None, CONTENT=False,):
-    # 计算纹理
+    
     if CONTENT:
         textures = 0.5 * (torch.nn.Tanh()(texture_content) + 1)
     else:
@@ -94,7 +94,7 @@ def train(device,hyp, opt,log_dir,logger):
 
     tb_writer = None  # init loggers
     if rank in [-1, 0]:
-        print("为什么看不到")
+        
         prefix = colorstr('tensorboard: ')
         text=f"{prefix}Start with 'tensorboard --logdir {opt.project}', view at http://localhost:6006/"
         print(text)
@@ -404,20 +404,18 @@ def train(device,hyp, opt,log_dir,logger):
                     #     Image.fromarray(
                     #         (255 * imgs_NSR_ref).data.cpu().numpy()[0].transpose((1, 2, 0)).astype('uint8')).save(
                     #         os.path.join(log_dir, 'target.png'))
-                    #     Image.fromarray(
-                    #             (255*imgs_cut).data.cpu().numpy()[0].transpose((1, 2, 0)).astype('uint8')).save(
-                    #             os.path.join(log_dir, "训练图像切割图像.png"))
+                    
                         Image.fromarray(
                             (255 * texture_img).data.cpu().numpy()[0].transpose((1, 2, 0)).astype('uint8')).save(
-                            os.path.join(log_dir, '渲染车.png'))
+                            os.path.join(log_dir, 'rendered car.png'))
                         Image.fromarray(np.transpose(255*imgs_in.data.cpu().numpy(), (1, 2, 0)).astype('uint8')).save(
-                            os.path.join(log_dir, '输入原图.png')) 
+                            os.path.join(log_dir, 'origin_input.png')) 
 
                         Image.fromarray(np.transpose(255*output.data.cpu().numpy(), (1, 2, 0)).astype('uint8')).save(
-                            os.path.join(log_dir, '输出原图.png')) 
+                            os.path.join(log_dir, 'origin_output.png')) 
                         
                         Image.fromarray(np.transpose(255*output_ref.data.cpu().numpy(), (1, 2, 0)).astype('uint8')).save(
-                            os.path.join(log_dir, '输出ref.png'))
+                            os.path.join(log_dir, 'output_ref.png'))
                     
                 except:
                     pass
