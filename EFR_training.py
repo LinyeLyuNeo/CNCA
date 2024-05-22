@@ -65,18 +65,18 @@ def cal_texture(texture_param, texture_origin, texture_mask, texture_content=Non
     if CONTENT:
         textures = 0.5 * (torch.nn.Tanh()(texture_content) + 1)
     else:
-        textures = 0.5 * (torch.nn.Tanh()(texture_param) + 1)# torch.nn.Tanh()()双曲正切函数，结果让纹理的参数在-1到1，加一乘0.5是让他在0-1之间
-    return texture_origin * (1 - texture_mask) + texture_mask * textures  #这里让纹理参数作用到掩码为1的位置上，加上前面哪项，是让剩余不想被对抗性纹理影响的点是原来图像的面片
+        textures = 0.5 * (torch.nn.Tanh()(texture_param) + 1)#
+    return texture_origin * (1 - texture_mask) + texture_mask * textures
 def mix_image(image_optim, mask,origin_image):
     return (1 - mask) * origin_image + mask * image_optim
 def calculate_inverse_ratio(masks):
-    # 计算每个掩码图像中非零像素点的数量
+
     nonzero_counts = torch.sum(masks != 0, dim=(1, 2), dtype=torch.float)
 
-    # 计算总像素点数
+
     total_pixels = masks.size(1) * masks.size(2)
 
-    # 计算非零像素点在总像素点数的比例的倒数
+
     inverse_ratios = total_pixels / nonzero_counts
 
     return inverse_ratios
@@ -102,7 +102,7 @@ def train(device,hyp, opt,log_dir,logger):
     # ---------------------------------#
     # -------Load 3D model-------------#
     # ---------------------------------#
-    texture_size = 6 #这里的纹理就是T，那个2D的奇形怪状的东西
+    texture_size = 6
     verts, faces, aux = load_obj(opt.obj_file) 
     tex_maps = aux.texture_images
     image=None
@@ -124,7 +124,7 @@ def train(device,hyp, opt,log_dir,logger):
     mask_image = (np.transpose(np.array(mask_image)[:,:,:3],(0,1,2))/255).astype('uint8')
     mask_image = torch.from_numpy(mask_image).to(device).unsqueeze(0)
     # print(f"mask_image.shape:{mask_image.shape}")
-    #存储再log文件夹下
+
     # Image.fromarray(np.transpose(mask_image.data.cpu().numpy()[0], (1, 2, 0)).astype('uint8')).save(
     #                 os.path.join(log_dir, 'mask_image.png')) 
     #image_optim=None
@@ -138,18 +138,9 @@ def train(device,hyp, opt,log_dir,logger):
     # print(f"image_orgin.shape:{image_orgin.shape}")
     # image_optim_in = mix_image(image_optim, mask_image, image_orgin)
     # print(f"image_optim_in.shape:{image_optim_in.shape}")
-    # Image.fromarray(
-    #                 (255 * image_optim_in).data.cpu().numpy()[0].astype('uint8')).save(
-    #                 os.path.join(log_dir, 'uv贴图_in.png'))
+
     
-    # texture_mask = np.zeros((faces.shape[0], texture_size, texture_size, texture_size, 3), 'int8')
-    # with open(opt.faces, 'r') as f:
-    #     face_ids = f.readlines()
-    #     for face_id in face_ids:
-    #         if face_id != '\n':
-    #             texture_mask[int(face_id) - 1, :, :, :,
-    #             :] = 1  # adversarial perturbation only allow painted on specific areas，那个face文件记载了哪些面片 这个掩码就是控制只能在某些面片上加对抗性纹理，因此有些要位置要设为0，保证其上没有梯度
-    # texture_mask = torch.from_numpy(texture_mask).to(device).unsqueeze(0) #unsqueeze（0）：假设原始张量的形状为 (3, 4, 5)，则使用 unsqueeze(0) 操作后，形状变为 (1, 3, 4, 5)。其中，新增的维度作为扩展的第一个维度，大小为 1。
+
     mask_dir = os.path.join(opt.datapath, 'masks/')
 
 
@@ -163,7 +154,7 @@ def train(device,hyp, opt,log_dir,logger):
 
     # Save run settings
     with open(save_dir / 'hyp.yaml', 'w') as f:
-        yaml.safe_dump(hyp, f, sort_keys=False)  #sort_keys是是否按字母排序，如果false就不会，把hyp写到hyp.yaml里面
+        yaml.safe_dump(hyp, f, sort_keys=False)
     with open(save_dir / 'opt.yaml', 'w') as f:
         yaml.safe_dump(vars(opt), f, sort_keys=False)
 
@@ -172,8 +163,8 @@ def train(device,hyp, opt,log_dir,logger):
     cuda = device.type != 'cpu'
     init_seeds(2 + rank)
     with open(opt.data) as f:
-        data_dict = yaml.safe_load(f)  # data dict #data_dict载入的是carla。yaml
-    #这部分的目的就是载入这个wandblogge
+        data_dict = yaml.safe_load(f)
+
     loggers = {'wandb': None}  # loggers dict
     if rank in [-1, 0]:
         opt.hyp = hyp  # add hyperparameters
@@ -190,16 +181,16 @@ def train(device,hyp, opt,log_dir,logger):
 
     # Model
     pretrained = weights.endswith('.pt')
-    with torch_distributed_zero_first(rank):#这一行是只让主进程执行的意思
+    with torch_distributed_zero_first(rank):
         weights = attempt_download(weights)  # download if not found locally
     ckpt = torch.load(weights, map_location=device)  # load checkpoint
     #print(f"ckpt['model']:{ckpt['model']}")
     model = Model(opt.cfg or ckpt['model'].yaml, ch=3, nc=nc, anchors=hyp.get('anchors')).to(device)  # create
-    exclude = ['anchor'] if (opt.cfg or hyp.get('anchors')) and not opt.resume else []  # exclude keys 目前是没有anchors的被注释掉了
+    exclude = ['anchor'] if (opt.cfg or hyp.get('anchors')) and not opt.resume else []  # exclude key
     state_dict = ckpt['model'].float().state_dict()  # to FP32
-    state_dict = intersect_dicts(state_dict, model.state_dict(), exclude=exclude)  # intersect，这个是按照key取交集和exclude，最终取值是按照第一个参数的value赋值
+    state_dict = intersect_dicts(state_dict, model.state_dict(), exclude=exclude)  # intersect
     model.load_state_dict(state_dict, strict=False)  # load
-    logger.info('Transferred %g/%g items from %s' % (len(state_dict), len(model.state_dict()), weights))  # report 这里说明了会排除掉anchors的超参数
+    logger.info('Transferred %g/%g items from %s' % (len(state_dict), len(model.state_dict()), weights))  # report
     with torch_distributed_zero_first(rank):
         check_dataset(data_dict)  # check
     train_path = data_dict['train']
@@ -234,9 +225,9 @@ def train(device,hyp, opt,log_dir,logger):
 
 
     # Image sizes
-    gs = max(int(model.stride.max()), 32)  # grid size (max stride)，          det = model.module.model[-1] if is_parallel(model) else model.model[-1]  # Detect() module 可以说明这个模型不是一个并行模型
+    gs = max(int(model.stride.max()), 32)  # grid size (max stride)，          det = model.module.model[-1] if is_parallel(model) else model.model[-1]  #
 
-    nl = model.model[-1].nl  # number of detection layers (used for scaling hyp['obj'])检测模型通常由多个层组成，每一层都负责不同的功能，例如提取特征、生成候选框、计算目标类别和边界框等
+    nl = model.model[-1].nl
     imgsz, imgsz_test = [check_img_size(x, gs) for x in opt.img_size]  # verify imgsz are gs-multiples
     print(f"rank:{rank}")
     # ---------------------------------#
@@ -248,7 +239,7 @@ def train(device,hyp, opt,log_dir,logger):
     dataloader, dataset,sampler = create_dataloader(train_path, imgsz, batch_size, gs, faces, texture_size, verts, aux,image_optim_in, opt,
                                             hyp=hyp, augment=True, cache=opt.cache_images, rank=rank,
                                             world_size=opt.world_size, workers=opt.workers,
-                                            prefix=colorstr('train: '), mask_dir=mask_dir, ret_mask=True)##这一步让数据集中既有图像又有mask
+                                            prefix=colorstr('train: '), mask_dir=mask_dir, ret_mask=True)#
     # ---------------------------------#
     # -------Yolo-v3 setting-----------#
     # ---------------------------------#
@@ -257,14 +248,14 @@ def train(device,hyp, opt,log_dir,logger):
     
     nb = len(dataloader)  # number of batches
     print(f"nb:{nb}")
-    # Model parameters  这里做的是将原先的超参数的box。cls。obj根据检测层个数做出一些调整
+    # Model parameters
     hyp['box'] *= 3. / nl  # scale to layers
     hyp['cls'] *= nc / 80. * 3. / nl  # scale to classes and layers
     hyp['obj'] *= (imgsz / 640) ** 2 * 3. / nl  # scale to image size and layers
     model.nc = nc  # attach number of classes to model
     model.hyp = hyp  # attach hyperparameters to model
-    model.gr = 1.0  # iou loss ratio (obj_loss = 1.0 or iou)  Intersection over Union权重比率，如果obj_loss不是1，就由iou操控比率
-    model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device) * nc  # attach class weights 80个权重类别不同的权重，用所有labels的频率倒数表示的
+    model.gr = 1.0  # iou loss ratio (obj_loss = 1.0 or iou)
+    model.class_weights = labels_to_class_weights(dataset.labels, nc).to(device) * nc
     model.names = names
 
     # Start training
@@ -308,7 +299,7 @@ def train(device,hyp, opt,log_dir,logger):
         mloss = torch.zeros(1, device=device)
         for epoch in range(epoch_start, epochs+1):
             # texture_param=(np.ones((1, faces.shape[0], texture_size, texture_size, texture_size, 3))*np.array(color_list[epoch-1])).astype('float32')
-            # texture_param = torch.autograd.Variable(torch.from_numpy(texture_param).to(device), requires_grad=False) #把这个变量自动优化
+            # texture_param = torch.autograd.Variable(torch.from_numpy(texture_param).to(device), requires_grad=False)
             # textures = cal_texture(texture_param, texture_origin, texture_mask)
             # dataset.set_textures(textures)
             #使image_optim全部为1
@@ -328,13 +319,13 @@ def train(device,hyp, opt,log_dir,logger):
             else:
                 model_nsr.train()
             pbar = enumerate(dataloader)
-            # textures = cal_texture(texture_param, texture_origin, texture_mask) #这样就得到了更新完的纹理面片组，这里的texture_mask也是可以更新纹理的面片信息
-            # dataset.set_textures(textures) #这一步可以说非常诡异，把这个纹理片图输入进去，就让数据集中多了texture_img 。masks是在构建数据集的时候就塞进去了，texture_img是贴上了纹理的汽车模型的一定视角的图像
+            # textures = cal_texture(texture_param, texture_origin, texture_mask)
+            # dataset.set_textures(textures)
             # logger.info(('\n' + '%10s' * 8) % ('Epoch', 'gpu_mem', 'loss','labels','tex_mean','grad_mean'))
             logger.info(('\n' + '%10s' * 4) % ('Epoch', 'gpu_mem','mloss','loss'))
             if rank in [-1, 0]:
                 pbar = tqdm(pbar, total=nb)  # progress bar
-            #这一步其实就是说明了不需要用这个改变模型参数，而是改变纹理生成的参数也就是 texture_param
+
             #print(dataloader)
             
             
@@ -388,7 +379,7 @@ def train(device,hyp, opt,log_dir,logger):
                 output_ref=imgs_NSR_ref[0]*masks[0]+imgs[0]/ 255.0 *(1-masks[0])
                 # Backward
                 optimizer.zero_grad()
-                loss.backward(retain_graph=False) #retain_graph=True 参数的作用是保留计算图，以便后续可能需要进行额外的反向传播操作，这一步只是为了后续能够访问texture_param.grad
+                loss.backward(retain_graph=False) #retain_graph=True
                 
 
                 optimizer.step()    
@@ -398,17 +389,7 @@ def train(device,hyp, opt,log_dir,logger):
                                              
                 try:
                     if rank in [-1, 0]: 
-                    # Image.fromarray可以将array变成图像
-                    # imgs.data.cpu().numpy()[0]这是imgs里面第一张图像，乘255是缩放，np.transpose(..., (1, 2, 0))：将数组的维度从 (C, H, W) 转置为 (H, W, C)，使得通道数（例如 RGB）在数组的最后一个维度。
-                    #     print(np.transpose(imgs.data.cpu().numpy()[0], (1, 2, 0)).astype('uint8').shape)
-                    #     print(np.transpose(imgs.data.cpu().numpy()[0], (1, 2, 0)).astype('uint8'))
-                    #     Image.fromarray(np.transpose(imgs.data.cpu().numpy()[0], (1, 2, 0)).astype('uint8')).save(
-                    #         os.path.join(log_dir, '车辆和渲染图合一.png')) 
-                    #     print(os.path.join(log_dir, '车辆和渲染图合一.png'))
-                    # # image_ref.save(os.path.join(log_dir, 'color_ref.png'))
-                    #     Image.fromarray((255 * masks).data.cpu().numpy()[0].astype('uint8')).save(
-                    #         os.path.join(log_dir, '掩码.png'))
-                        #和上面一个意思，这人非要搞两种
+
                         
                         
                         # Image.fromarray(
@@ -461,11 +442,11 @@ def train(device,hyp, opt,log_dir,logger):
                 
                 if rank in [-1, 0]: 
                     
-                    mloss = (mloss * i + loss) / (i + 1)  # update mean losses  loss_items有四个值，box，obj，cls和total
+                    mloss = (mloss * i + loss) / (i + 1)
                     mem = '%.3gG' % (torch.cuda.memory_reserved() / 1E9 if torch.cuda.is_available() else 0)  # (GB)
                     s = ('%10s' * 2 +"%10.4f"*2)  % (
-                        '%g/%g' % (epoch, epochs), mem,mloss.data,loss.data) #这里打印的就是Epoch gpu_mem那一行，targets.shape[0（打印的labels）]显示的就是每一个batch中训练labels总数
-                    #这里有一个比较奇怪的问题，就是当mloss和loss.data.cpu()存在时，get_item()的时间是0.2，SimpleNSR中的时间是0.1，而如果去掉这两个，那么get_item()的时间是0.3，SimpleNSR中的时间是0.0，这是为什么呢？
+                        '%g/%g' % (epoch, epochs), mem,mloss.data,loss.data)
+
                     pbar.set_description(s)
                     # tb_writer.add_histogram(tag="Conv_last",
                     #             values=model_nsr.model.conv1.weight,
@@ -514,7 +495,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default='data/nsr.yaml', help='data.yaml path')
     parser.add_argument('--lr', type=float, default=0.01, help='learning rate for texture_param')
-    parser.add_argument('--obj_file', type=str, default='/home/zhoujw/FCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/pytorch3d_Etron.obj', help='3d car model obj') #3D车模
+    parser.add_argument('--obj_file', type=str, default='/home/zhoujw/FCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/pytorch3d_Etron.obj', help='3d car model obj')
     parser.add_argument('--faces', type=str, default='car_assets/exterior_face.txt',
                         help='exterior_face file  (exterior_face, all_faces)')
     parser.add_argument('--datapath', type=str, default='/data/zhoujw/DTN',
@@ -562,7 +543,7 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    T = opt.t #这个T是计算平滑损失最后乘的参数，论文中的μ
+    T = opt.t
     D1 = opt.d1
     D2 = opt.d2
     lamb = opt.lamb
@@ -590,7 +571,7 @@ if __name__ == '__main__':
     # Set DDP variables
 
 
-    # opt.world_size = int(os.environ['WORLD_SIZE']) if 'WORLD_SIZE' in os.environ else 1  # os.environ[""]获得一个环境变量，world_size是计算任务中有多少个结点
+    
     opt.global_rank = int(os.environ['RANK']) if 'RANK' in os.environ else -1
     # set_logging(opt.global_rank)
     # print(f"rank:{opt.global_rank}")
