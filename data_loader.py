@@ -123,13 +123,4 @@ if __name__ == '__main__':
     image = (np.clip(np.asnumpy(image),0,1) * 255).astype(np.uint8)
     image = Image.fromarray(np.transpose(image, (1,2,0)))
     image.save('dada.png')
-    # dataset = MyDataset('/data/zhoujw/phy_attack/train/', 608, 4, faces, vertices)
-    # loader = DataLoader(
-    #     dataset=dataset,   
-    #     batch_size=3,     
-    #     shuffle=True,            
-    #     #num_workers=2,              
-    # )
-    
-    # for img, car_box in loader:
-    #     print(img.size(), car_box.size())
+
