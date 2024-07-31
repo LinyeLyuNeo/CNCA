@@ -129,7 +129,7 @@ def train(device,hyp, opt,log_dir,logger):
     #                 os.path.join(log_dir, 'mask_image.png')) 
     #image_optim=None
     # if rank in [-1, 0]:
-    image_optim = torch.autograd.Variable(image.to(device), requires_grad=False) #把这个变量自动优化
+    image_optim = torch.autograd.Variable(image.to(device), requires_grad=False) 
     # dist.broadcast(image_optim, src=0)
     # dist.barrier()
     #image_optim = nn.parallel.DistributedDataParallel(image_optim,device_ids=[device],output_device=device)
@@ -174,7 +174,7 @@ def train(device,hyp, opt,log_dir,logger):
         data_dict = wandb_logger.data_dict
         if wandb_logger.wandb:
             weights, epochs, hyp = opt.weights, opt.epochs, opt.hyp  # WandbLogger might update weights, epochs if resuming
-    #导入数据集的一些参数
+    
     nc = 1 if opt.single_cls else int(data_dict['nc'])  # number of classes
     names = ['item'] if opt.single_cls and len(data_dict['names']) != 1 else data_dict['names']  # class names
     assert len(names) == nc, '%g names found for nc=%g dataset in %s' % (len(names), nc, opt.data)  # check
@@ -266,10 +266,10 @@ def train(device,hyp, opt,log_dir,logger):
 
     model_nsr=U_Net()
 
-    saved_state_dict = torch.load('/home/zhoujw/FCA/Full-coverage-camouflage-adversarial-attack/src/logs/epoch-9+dataset-DTN+ratio-false+night-4+day-0+patchInitialWay-random+batch_size-16+name-pytorch3d_NRP+pytorch-true+/model_nsr_s9_l10.pth')  # 原始的参数字典
+    saved_state_dict = torch.load('/home/xxx/FCA/Full-coverage-camouflage-adversarial-attack/src/logs/epoch-9+dataset-DTN+ratio-false+night-4+day-0+patchInitialWay-random+batch_size-16+name-pytorch3d_NRP+pytorch-true+/model_nsr_s9_l10.pth')  
     new_state_dict = {}
     for k, v in saved_state_dict.items():
-        name = k[7:]  # 去掉 'module.' 前缀
+        name = k[7:]  
         new_state_dict[name] = v
     saved_state_dict = new_state_dict
     model_nsr.load_state_dict(saved_state_dict)
@@ -302,7 +302,7 @@ def train(device,hyp, opt,log_dir,logger):
             # texture_param = torch.autograd.Variable(torch.from_numpy(texture_param).to(device), requires_grad=False)
             # textures = cal_texture(texture_param, texture_origin, texture_mask)
             # dataset.set_textures(textures)
-            #使image_optim全部为1
+            
             image_optim=(image_optim.fill_(1.0)*torch.from_numpy(np.array(color_list[epoch-1]).astype('float32')).to(device))
             # print(f"image_optim_max:{torch.max(image_optim)}")
             # print(f"image_optim_min:{torch.min(image_optim)}")
@@ -338,7 +338,7 @@ def train(device,hyp, opt,log_dir,logger):
                 time_all=start_all-record_start_all
                 record_start_all=start_all
                 
-                #将训练图像传递给神经网络
+                
                 start_Unet_forward =time.perf_counter()
                 imgs_cut = imgs_cut.to(device, non_blocking=True).float() / 255.0  # uint8 to float32, 0-255 to 0.0-1.0
                 # print(imgs_cut.shape)
@@ -493,7 +493,7 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default='data/nsr.yaml', help='data.yaml path')
     parser.add_argument('--lr', type=float, default=0.01, help='learning rate for texture_param')
-    parser.add_argument('--obj_file', type=str, default='/home/zhoujw/FCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/pytorch3d_Etron.obj', help='3d car model obj')
+    parser.add_argument('--obj_file', type=str, default='/home/xxx/FCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/pytorch3d_Etron.obj', help='3d car model obj')
     parser.add_argument('--faces', type=str, default='car_assets/exterior_face.txt',
                         help='exterior_face file  (exterior_face, all_faces)')
     parser.add_argument('--datapath', type=str, default='/data/zhoujw/DTN',
