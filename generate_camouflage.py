@@ -400,7 +400,7 @@ def train(device,hyp, opt,log_dir,logger,diff_opt):
         aesthetic_model = MLP(768)  # CLIP embedding dim is 768 for CLIP ViT L 14
 
         # s = torch.load("sac+logos+ava1-l14-linearMSE.pth")   # load the model you trained previously or the model available in this repo
-        s = torch.load("/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/aesthetic_predictor/sac+logos+ava1-l14-linearMSE.pth")
+        s = torch.load("/home/xxx/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/aesthetic_predictor/sac+logos+ava1-l14-linearMSE.pth")
 
         aesthetic_model.load_state_dict(s)
 
@@ -454,13 +454,7 @@ def train(device,hyp, opt,log_dir,logger,diff_opt):
                 # btn1 = cond_name
                 # btn1 = "Nothing"
                 # btn1 = cond_name
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/conds/sketch/car_mask_sketch_v2.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/conds/sketch/voronoi_map_200.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/conds/sketch/texture_pattern_2.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/girl/sketch.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/sketch/simpson.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/sketch/pokemon.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/sketch/flower.png"
+             
                 # image = Image.open(image_path)
                 # image_array = np.array(image)
                 # im1 = image_array
@@ -474,12 +468,7 @@ def train(device,hyp, opt,log_dir,logger,diff_opt):
                 
             elif cond_name == "color":
                 # btn1 = cond_name
-                # image_path = "/home/linyelv/Projects/T2I-Adapter/src/T2I-Adapter-SD/examples/examples/color/color_0004.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/conds/color/color_0002.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/girl/color.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/color/pokemon.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/color/flower.png"
-                # image_path = "/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/extract/color/simpson.png"
+          
                 # image = Image.open(image_path)
                 # image_array = np.array(image)
                 # im1 = image_array
@@ -538,25 +527,10 @@ def train(device,hyp, opt,log_dir,logger,diff_opt):
         
         ### initilization from pre-defined prompt
         
-        # initial_prompt = 'camouflage texture with different patterns'
-        
-        # initial_prompt = 'anime girl with camouflage natural style, colorful background'
-        # initial_prompt = 'the simpsons characters poster, animation style'
-        # initial_prompt = 'yellow, black, graffiti pattern'
-        
-        # initial_prompt = 'a image full of cartoon animals'
+     
         
         initial_prompt = 'black and white zebra pattern'
         
-        # initial_prompt = 'a colorful jigsaw puzzle texture pattern'
-        
-        # initial_prompt = 'red and green graffiti, small size resolution'
-        
-        # initial_prompt = 'a collection of pokomons, animation style'
-        # initial_prompt = 'girl before a mirror, picasso painting style, high contrast, colorful'
-        # initial_prompt = 'a collection of colorful flowers, animation style, high contrast, disruptive patterns'
-        
-        # initial_prompt = 'vibrant and dynamic die cut texture design, portraying a wolfs head interlaced with cosmic galaxies, AI, texture, high contrast, bright neon colors, top-view, high resolution, vector art, detailed stylization, modern graphic art, unique, opaque, weather resistant, UV laminated'
         
         cond_prompt = sd_model.get_learned_conditioning([initial_prompt])
         
@@ -611,8 +585,8 @@ def train(device,hyp, opt,log_dir,logger,diff_opt):
         # mesh = Meshes(
         #     verts=[verts.to(device)], faces=[faces.verts_idx.to(device)], textures=tex
         # )
-        # mask_image_dir="/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/mask.png"
-        mask_image_dir="/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d_last/mask.png"
+        # mask_image_dir="/home/xxx/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/mask.png"
+        mask_image_dir="/home/xxx/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d_last/mask.png"
         mask_image = Image.open(mask_image_dir)#.convert("L")
         
         mask_image = (np.transpose(np.array(mask_image)[:,:,:3],(0,1,2))/255).astype('uint8')
@@ -781,9 +755,8 @@ def train(device,hyp, opt,log_dir,logger,diff_opt):
         # ------------Training-------------#
         # ---------------------------------#
         model_nsr=U_Net()
-        # saved_state_dict = torch.load('./NRP_checkpoint/NRP_checkpoint.pth')
         saved_state_dict = torch.load('./NRP_checkpoint/model_nsr_s9_l17.pth')
-        # saved_state_dict = torch.load('/data/zhoujw/2024.1.2_last_logs/epoch-9+dataset-DTN+ratio-true+night-4+day-0+sync-true+patchInitialWay-random+batch_size-16+lr-0.01+model-resnet50+loss_func-loss_midu+loss_content+loss_smooth+lamb-0.0001+D1-0.9+D2-0.1+T-0.0001+/model_nsr_s9_l13.pth')  # 原始的参数字典
+       
 
 
         
@@ -1217,13 +1190,12 @@ if __name__ == '__main__':
     parser.add_argument('--cfg', type=str, default='', help='model.yaml path')
     parser.add_argument('--data', type=str, default='data/carla.yaml', help='data.yaml path')
     parser.add_argument('--lr', type=float, default=0.01, help='learning rate for texture_param')
-    # parser.add_argument('--obj_file', type=str, default='/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/pytorch3d_Etron.obj', help='3d car model obj')
-    parser.add_argument('--obj_file', type=str, default='/home/linyelv/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d_last/pytorch3d_Etron.obj', help='3d car model obj')
+    parser.add_argument('--obj_file', type=str, default='/home/xxx/Projects/RAUCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/pytorch3d_Etron.obj', help='3d car model obj')
     parser.add_argument('--faces', type=str, default='car_assets/exterior_face.txt',
                         help='exterior_face file  (exterior_face, all_faces)')
-    # parser.add_argument('--datapath', type=str, default='/data/zhoujw/phy_multi_weather_new_day_right',
+    # parser.add_argument('--datapath', type=str, default='/data/xxx/phy_multi_weather_new_day_right',
     #                     help='data path')
-    parser.add_argument('--datapath', type=str, default='/data1/linyelv/phy_multi_weather_new_day_right',
+    parser.add_argument('--datapath', type=str, default='/data1/xxx/phy_multi_weather_new_day_right',
                             help='data path')
     parser.add_argument('--patchInitial', type=str, default='random',
                         help='data path')
@@ -1324,7 +1296,7 @@ if __name__ == '__main__':
 
     
     
-    T = opt.t #这个T是计算平滑损失最后乘的参数，论文中的μ
+    T = opt.t 
     D1 = opt.d1
     D2 = opt.d2
     lamb = opt.lamb
