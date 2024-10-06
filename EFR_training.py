@@ -118,7 +118,7 @@ def train(device,hyp, opt,log_dir,logger):
     # mesh = Meshes(
     #     verts=[verts.to(device)], faces=[faces.verts_idx.to(device)], textures=tex
     # )
-    mask_image_dir="/home/zhoujw/FCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/mask.png"
+    mask_image_dir="/home/xxx/FCA/Full-coverage-camouflage-adversarial-attack/src/car_pytorch3d/mask.png"
     mask_image = Image.open(mask_image_dir)#.convert("L")
     
     mask_image = (np.transpose(np.array(mask_image)[:,:,:3],(0,1,2))/255).astype('uint8')
